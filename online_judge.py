@@ -4,6 +4,61 @@ import tempfile
 import subprocess
 
 # -------------------------------
+# DATABASE INITIALIZATION
+# -------------------------------
+
+conn = sqlite3.connect("judge.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE,
+    password TEXT
+)
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS problems (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    statement TEXT
+)
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    problem_title TEXT,
+    verdict TEXT,
+    submission_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+""")
+
+cursor.execute("SELECT COUNT(*) FROM problems")
+count = cursor.fetchone()[0]
+
+if count == 0:
+
+    cursor.execute(
+        "INSERT INTO problems (title, statement) VALUES (?, ?)",
+        ("Addition", "Read two numbers and print their sum")
+    )
+
+    cursor.execute(
+        "INSERT INTO problems (title, statement) VALUES (?, ?)",
+        ("Reverse String", "Read a string and print it reversed")
+    )
+
+    cursor.execute(
+        "INSERT INTO problems (title, statement) VALUES (?, ?)",
+        ("Palindrome", "Check whether a string is palindrome")
+    )
+
+conn.commit()
+conn.close()
+# -------------------------------
 # SESSION STATE
 # -------------------------------
 
@@ -38,7 +93,7 @@ if not st.session_state.logged_in:
 
             conn = sqlite3.connect("judge.db")
             cursor = conn.cursor()
-
+            
             try:
 
                 cursor.execute(
